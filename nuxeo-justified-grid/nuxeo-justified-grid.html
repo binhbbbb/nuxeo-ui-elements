@@ -19,7 +19,6 @@ limitations under the License.
 <link rel="import" href="../nuxeo-routing-behavior.html">
 
 <link rel="import" href="../../iron-resizable-behavior/iron-resizable-behavior.html">
-<link rel="import" href="../../iron-image/iron-image.html">
 <link rel="import" href="../../iron-list/iron-list.html">
 <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
 <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
@@ -74,14 +73,6 @@ An element for displaying page provider results in a justified grid with infinit
         color: white;
       }
 
-      #list .item iron-image {
-        height: 100%;
-        width: 100%;
-        --iron-image-placeholder: {
-          background: #fafafa;
-        };
-      }
-
       #list .item paper-icon-button {
         position: absolute;
         left: 10px;
@@ -122,9 +113,12 @@ An element for displaying page provider results in a justified grid with infinit
         <template>
           <div class="row">
             <template is="dom-repeat" items="[[row]]">
+
               <div class="item" tabindex="0" on-tap="_tap" selected$="[[_isSelected(item, selectedItems.*)]]"
                    style$="height: [[item._view.height]]px; width: [[item._view.width]]px;">
-                <nuxeo-justified-grid-item document="[[item]]"></nuxeo-justified-grid-item>
+
+                <div id="item-[[item._view.index]]"></div>[[_itemChanged(item, item._view.width, item._view.height)]]
+
                 <paper-icon-button noink icon="icons:check" selection-mode$="[[selectionMode]]" hidden$="[[!selectionEnabled]]" on-tap="_check"></paper-icon-button>
               </div>
             </template>
@@ -139,7 +133,10 @@ An element for displaying page provider results in a justified grid with infinit
   <script>
     Polymer({
       is: 'nuxeo-justified-grid',
-      behaviors: [Polymer.IronResizableBehavior, Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior],
+      behaviors: [
+        Polymer.IronResizableBehavior, Polymer.Templatizer,
+        Nuxeo.PageProviderDisplayBehavior, Nuxeo.RoutingBehavior
+      ],
       properties: {
 
         rowHeight: {
@@ -184,6 +181,10 @@ An element for displaying page provider results in a justified grid with infinit
         _isFetching: {
           type: Boolean,
           value: false
+        },
+
+        _templateElement: {
+          type: Object
         }
       },
 
@@ -191,6 +192,31 @@ An element for displaying page provider results in a justified grid with infinit
         '_refresh(nxProvider, sortSelected)',
         '_selectedItemsChanged(selectedItems.splices)'
       ],
+
+      ready: function() {
+        var template = Polymer.dom(this).querySelector('template');
+        if (template) {
+          this.templatize(template);
+          this._templateElement = this.stamp().root.firstElementChild;
+        }
+      },
+
+      _itemChanged: function(item) {
+        if (this._templateElement && item && item._view) {
+          Polymer.RenderStatus.afterNextRender(this, function() {
+            var el = this.$$('#item-' + item._view.index);
+            if (el) {
+              if (el.childNodes.length > 0) {
+                el.childNodes[0].set('document', item);
+              } else {
+                var clone = this._templateElement.cloneNode(true);
+                clone.set('document', item);
+                el.appendChild(clone);
+              }
+            }
+          }.bind(this));
+        }
+      },
 
       // overridden from Nuxeo.PageProviderDisplayBehavior
       reset: function() {

@@ -46,13 +46,17 @@ limitations under the License.
 
         <nuxeo-page-provider id="provider"
                              provider="default_search"
-                             page-size="40"
+                             page-size="50"
                              enrichers="thumbnail"
                              params='{"ecm_path": ["/default-domain/workspaces/demo"]}'>
         </nuxeo-page-provider>
 
         <nuxeo-demo-section heading="Justified grid" size="large">
-          <nuxeo-justified-grid id="grid" nx-provider="provider" selection-enabled></nuxeo-justified-grid>
+          <nuxeo-justified-grid id="grid" nx-provider="provider" selection-enabled>
+            <template>
+              <nuxeo-justified-grid-item></nuxeo-justified-grid-item>
+            </template>
+          </nuxeo-justified-grid>
         </nuxeo-demo-section>
 
       </template>
