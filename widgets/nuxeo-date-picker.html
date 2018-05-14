@@ -14,11 +14,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-
-<link rel="import" href="../../paper-input/paper-input.html">
+<link rel="import" href="../../datetime-picker/overlay-date-picker.html">
 <link rel="import" href="../../iron-form-element-behavior/iron-form-element-behavior.html">
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
-<link rel="import" href="../../datetime-picker/overlay-date-picker.html">
+<link rel="import" href="../../nuxeo-elements/nuxeo-element.html">
+<link rel="import" href="../../paper-input/paper-input.html">
 <link rel="import" href="../moment-import.html">
 
 
@@ -101,114 +101,126 @@ Example:
   </template>
 
   <script>
-    Polymer({
-      is: 'nuxeo-date-picker',
-      behaviors: [Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior],
-      properties: {
-        label: String,
+    {
+      class DatePicker
+        extends Polymer.mixinBehaviors([Polymer.IronFormElementBehavior, Polymer.IronValidatableBehavior], Nuxeo.Element) {
 
-        errorMessage: String,
-
-        /*
-         * The maximum date-time input value (e.g. `"2000-01-01"`).
-         */
-        max: String,
-
-        /*
-         * The minimum date-time input value (e.g. `"2000-01-01"`).
-         */
-        min: String,
-
-        required: {
-          type: Boolean,
-          value: false
-        },
-
-        value: {
-          type: String,
-          notify: true,
-          observer: '_valueChanged'
-        },
-
-        disabled: {
-          type: Boolean,
-          value: false
-        },
-
-        _pickerValue: {
-          type: String
-        },
-
-        _inputValue: {
-          type: String,
-          observer: '_inputValueChanged'
-        },
-
-        _wasOpened: {
-          type: Boolean,
-          value: false
-        },
-
-        _preventInputUpdate: {
-          type: Boolean,
-          value: false
+        static get is() {
+          return 'nuxeo-date-picker';
         }
-      },
 
-      _togglePicker: function() {
-        if (!this.$.picker._hasNative) {
-          if (!this._wasOpened && !this.value) {
-            this.$.picker.now();
-          }
-          this.$.picker.toggle();
+        static get properties() {
+          return {
+            label: String,
+
+            errorMessage: String,
+
+            /*
+             * The maximum date-time input value (e.g. `"2000-01-01"`).
+             */
+            max: String,
+
+            /*
+             * The minimum date-time input value (e.g. `"2000-01-01"`).
+             */
+            min: String,
+
+            required: {
+              type: Boolean,
+              value: false,
+            },
+
+            value: {
+              type: String,
+              notify: true,
+              observer: '_valueChanged',
+            },
+
+            disabled: {
+              type: Boolean,
+              value: false,
+            },
+
+            _pickerValue: {
+              type: String,
+            },
+
+            _inputValue: {
+              type: String,
+              observer: '_inputValueChanged',
+            },
+
+            _wasOpened: {
+              type: Boolean,
+              value: false,
+            },
+
+            _preventInputUpdate: {
+              type: Boolean,
+              value: false,
+            },
+          };
         }
-      },
 
-      _pickerOpenedChanged: function(e) {
-        if (e.detail.value) {
-          this._wasOpened = true;
-        } else if (this._pickerValue) {
-          var date = moment(this._pickerValue);
-          if (date.isValid()) {
-            this.set('value', date.toJSON());
+        _togglePicker() {
+          if (!this.$.picker._hasNative) {
+            if (!this._wasOpened && !this.value) {
+              this.$.picker.now();
+            }
+            this.$.picker.toggle();
           }
         }
-      },
 
-      _getValidity: function() {
-        if (!this.required) {
-          return true;
+        _pickerOpenedChanged(e) {
+          if (e.detail.value) {
+            this._wasOpened = true;
+          } else if (this._pickerValue) {
+            const date = moment(this._pickerValue);
+            if (date.isValid()) {
+              this.set('value', date.toJSON());
+            }
+          }
         }
-        return !!this.value;
-      },
 
-      _valueChanged: function() {
-        if (!this.value) {
-          this._inputValue = null;
-          return;
+        _getValidity() {
+          if (!this.required) {
+            return true;
+          }
+          return !!this.value;
         }
-        var date = moment(this.value);
-        if (this.value && date.isValid()) {
-          this._preventInputUpdate = true;
-          this._inputValue = date.format('YYYY-MM-DD');
-          this._pickerValue = date.format('YYYY-MM-DD');
-        } else {
-          this._inputValue = '';
-          this._pickerValue = '';
-        }
-      },
 
-      _inputValueChanged: function() {
-        if (this._inputValue && !this._preventInputUpdate) {
-          var date = moment(this._inputValue);
-          if (date.isValid()) {
-            this.set('value', date.toJSON());
+        _valueChanged() {
+          if (!this.value) {
+            this._inputValue = null;
+            return;
+          }
+          const date = moment(this.value);
+          if (this.value && date.isValid()) {
+            this._preventInputUpdate = true;
+            this._inputValue = date.format('YYYY-MM-DD');
+            this._pickerValue = date.format('YYYY-MM-DD');
           } else {
-            this.set('value', '');
+            this._inputValue = '';
+            this._pickerValue = '';
           }
         }
-        this._preventInputUpdate = false;
+
+        _inputValueChanged() {
+          if (this._inputValue && !this._preventInputUpdate) {
+            const date = moment(this._inputValue);
+            if (date.isValid()) {
+              this.set('value', date.toJSON());
+            } else {
+              this.set('value', '');
+            }
+          }
+          this._preventInputUpdate = false;
+        }
+
       }
-    });
+
+      customElements.define(DatePicker.is, DatePicker);
+      Nuxeo.DatePicker = DatePicker;
+    }
   </script>
 </dom-module>

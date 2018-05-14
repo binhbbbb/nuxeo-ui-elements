@@ -21,7 +21,7 @@ limitations under the License.
 <link rel="import" href="../../iron-validatable-behavior/iron-validatable-behavior.html">
 
 <script>
-  var Nuxeo = Nuxeo || {};
+  const Nuxeo = Nuxeo || {};
   (function () {
 
     /**
@@ -35,7 +35,7 @@ limitations under the License.
          * Name of the directory.
          */
         directoryName: {
-          type: String
+          type: String,
         },
 
         /**
@@ -60,7 +60,7 @@ limitations under the License.
          */
         readonly: {
           type: Boolean,
-          value: false
+          value: false,
         },
 
         /**
@@ -68,9 +68,9 @@ limitations under the License.
          */
         idFunction: {
           type: Function,
-          value: function() {
+          value() {
             return this._idFunction.bind(this);
-          }
+          },
         },
 
         /**
@@ -83,9 +83,9 @@ limitations under the License.
          */
         format: {
           type: Function,
-          value: function() {
+          value() {
             return this._formatter.bind(this);
-          }
+          },
         },
 
         /**
@@ -94,54 +94,54 @@ limitations under the License.
          * @event directory-entries-loaded
          */
 
-        _entries: Array
+        _entries: Array,
       },
 
       observers: [
-        '_fetchEntries(directoryName)'
+        '_fetchEntries(directoryName)',
       ],
 
-      _fetchEntries: function() {
+      _fetchEntries() {
         if (this.directoryName) {
           this.value = [];
-          this.async(function() {
+          this.async(() => {
             this.$.op.params = {
-              'directoryName': this.directoryName,
-              'dbl10n': this.dbl10n,
-              'canSelectParent': this.canSelectParent,
-              'localize' : true,
-              'lang': (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en'
-             };
-            this.$.op.execute().then(function(resp) {
+              directoryName: this.directoryName,
+              dbl10n: this.dbl10n,
+              canSelectParent: this.canSelectParent,
+              localize: true,
+              lang: (window.nuxeo.I18n.language) ? window.nuxeo.I18n.language.split('-')[0] : 'en',
+            };
+            this.$.op.execute().then((resp) => {
               this._entries = [];
-              resp.forEach(function(entry) {
+              resp.forEach((entry) => {
                 this._populate(entry);
-              }.bind(this));
+              });
               this.fire('directory-entries-loaded');
-            }.bind(this));
-          }.bind(this));
+            });
+          });
         }
       },
 
-      _formatter: function(entry) {
+      _formatter(entry) {
         return entry.absoluteLabel || entry.displayLabel;
       },
 
-      _idFunction: function(item) {
+      _idFunction(item) {
         return item.id || item.computedId || item.uid;
       },
 
-      _populate: function(entry) {
+      _populate(entry) {
         if (this.canSelectParent || !entry.children) {
           entry.checked = this._isChecked(entry);
           this._entries.push(entry);
         }
         if (entry.children) {
-          entry.children.forEach(function(child) {
+          entry.children.forEach((child) => {
             this._populate(child);
-          }.bind(this));
+          });
         }
-      }
+      },
     }];
-  })();
+  }());
 </script>
